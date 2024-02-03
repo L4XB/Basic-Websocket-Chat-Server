@@ -12,6 +12,13 @@ const getRoomFromRequest = (req) => {
   return parameters.query.room;
 };
 
+const addClientToRoom = (ws, room) => {
+  if (!rooms[room]) {
+    rooms[room] = [];
+  }
+  rooms[room].push(ws);
+};
+
 const addMessageToRoom = (room, message) => {
   if (!messages[room]) {
     messages[room] = [];
@@ -38,8 +45,16 @@ const removeClientFromRoom = (ws, room) => {
 };
 
 wss.on('connection', (ws, req) => {
-  const room = getRoomFromRequest(req);
+  const parameters = url.parse(req.url, true);
+  const room = parameters.query.room;
+  const allMessagesFromRoom = parameters.query.allMessagesFromRoom;
+
   addClientToRoom(ws, room);
+
+  if (allMessagesFromRoom) {
+    const roomMessages = messages[allMessagesFromRoom] || [];
+    ws.send(JSON.stringify(roomMessages));
+  }
 
   ws.on('message', (data) => broadcastMessage(ws, room, data));
   ws.on('close', () => removeClientFromRoom(ws, room));
