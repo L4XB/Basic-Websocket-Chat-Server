@@ -1,4 +1,5 @@
 import url from 'url';
+import { v4 as uuidv4 } from 'uuid';
 import { WebSocket, WebSocketServer } from "ws";
 
 const wss = new WebSocketServer({ port: 8080, clientTracking: true });
@@ -45,6 +46,7 @@ const removeClientFromRoom = (ws, room) => {
 };
 
 wss.on('connection', (ws, req) => {
+  ws.id = uuidv4();
   const parameters = url.parse(req.url, true);
   const room = parameters.query.room;
   const allMessagesFromRoom = parameters.query.allMessagesFromRoom;

@@ -2,6 +2,7 @@
   "type": "module",
   "dependencies": {
     "systeminformation": "^5.17.12",
+    "uuid": "^9.0.1",
     "websocket": "^1.0.34",
     "ws": "^8.12.0"
   }
