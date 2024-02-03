@@ -50,10 +50,10 @@ wss.on('connection', (ws, req) => {
   const allMessagesFromRoom = parameters.query.allMessagesFromRoom;
 
   addClientToRoom(ws, room);
-
   if (allMessagesFromRoom) {
     const roomMessages = messages[allMessagesFromRoom] || [];
-    ws.send(JSON.stringify(roomMessages));
+    const lastMessages = roomMessages.slice(-30);
+    ws.send(JSON.stringify(lastMessages));
   }
 
   ws.on('message', (data) => broadcastMessage(ws, room, data));
