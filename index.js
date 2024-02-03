@@ -7,10 +7,20 @@ console.log("Server is Live on Port 8080")
 
 let rooms = {};
 let messages = {};
+let users = {};
 
 const getRoomFromRequest = (req) => {
   const parameters = url.parse(req.url, true);
   return parameters.query.room;
+};
+
+const addUser = (ws, userName) => {
+  if (users[userName]) {
+    ws.id = users[userName];
+  } else {
+    ws.id = uuidv4();
+    users[userName] = ws.id;
+  }
 };
 
 const addClientToRoom = (ws, room) => {
@@ -30,6 +40,7 @@ const addMessageToRoom = (room, message) => {
 const broadcastMessage = (ws, room, data) => {
   const parsedData = JSON.parse(data);
   const message = {
+    id: ws.id,
     userName: parsedData.userName,
     message: parsedData.message
   };
@@ -46,14 +57,15 @@ const removeClientFromRoom = (ws, room) => {
 };
 
 wss.on('connection', (ws, req) => {
-  ws.id = uuidv4();
   const parameters = url.parse(req.url, true);
   const room = parameters.query.room;
-  const allMessagesFromRoom = parameters.query.allMessagesFromRoom;
+  const userName = parameters.query.userName;
+  addUser(ws, userName);
 
   addClientToRoom(ws, room);
-  if (allMessagesFromRoom) {
-    const roomMessages = messages[allMessagesFromRoom] || [];
+
+  if (parameters.query.allMessagesFromRoom) {
+    const roomMessages = messages[parameters.query.allMessagesFromRoom] || [];
     const lastMessages = roomMessages.slice(-30);
     ws.send(JSON.stringify(lastMessages));
   }
